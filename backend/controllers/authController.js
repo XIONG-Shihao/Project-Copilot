@@ -27,12 +27,18 @@ async function registerUser(req, res) {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
-    return res.status(400).json({ message: 'Name, Email and password are required' });
+    return res
+      .status(400)
+      .json({ message: 'Name, Email and password are required' });
   }
 
   try {
-    const { user, token } = await authService.registerUser({ name, email, password });
-    
+    const { user, token } = await authService.registerUser({
+      name,
+      email,
+      password,
+    });
+
     // Set the JWT token cookie
     res.cookie('token', token, {
       httpOnly: true,
@@ -40,21 +46,24 @@ async function registerUser(req, res) {
       sameSite: 'lax', // More permissive for development
       maxAge: 48 * 60 * 60 * 1000, // 48hr, adjust if needed
     });
-    
-    res.status(201).json({ 
+
+    res.status(201).json({
       message: 'User registered successfully',
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
-      }
+        email: user.email,
+      },
     });
   } catch (err) {
     if (err.message === 'Email already registered') {
       res.status(409).json({ message: err.message });
     } else if (err.message === 'Provided Email is not valid') {
       res.status(400).json({ message: err.message });
-    } else if (err.message === 'Password must have at least 8 characters, 1 uppercase letter and 1 special character') {
+    } else if (
+      err.message ===
+      'Password must have at least 8 characters, 1 uppercase letter and 1 special character'
+    ) {
       res.status(400).json({ message: err.message });
     } else {
       res.status(500).json({ message: err.message });
@@ -82,32 +91,34 @@ async function loginUser(req, res) {
   const { email, password, rememberMe } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ message: 'An email and password are required to login' });
+    return res
+      .status(400)
+      .json({ message: 'An email and password are required to login' });
   }
 
   try {
     const { token, user } = await authService.loginUser({ email, password });
-    
+
     // Set cookie expiration based on "Remember me" option
     // Default: 48 hours; With "Remember me": 30 days
-    const cookieMaxAge = rememberMe 
+    const cookieMaxAge = rememberMe
       ? 30 * 24 * 60 * 60 * 1000 // 30 days in milliseconds
-      : 48 * 60 * 60 * 1000;     // 48 hours in milliseconds
-    
+      : 48 * 60 * 60 * 1000; // 48 hours in milliseconds
+
     res.cookie('token', token, {
       httpOnly: true,
       secure: false, // Set to false for development
       sameSite: 'lax', // More permissive for development
-      maxAge: cookieMaxAge
+      maxAge: cookieMaxAge,
     });
-    
-    res.status(200).json({ 
+
+    res.status(200).json({
       message: 'Login successful',
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
-      }
+        email: user.email,
+      },
     });
   } catch (err) {
     if (err.message === 'Invalid Email or Password') {
@@ -181,11 +192,17 @@ async function changePassword(req, res) {
   const userId = req.user.userId;
 
   if (!currentPassword || !newPassword) {
-    return res.status(400).json({ message: 'Current and new passwords are required' });
+    return res
+      .status(400)
+      .json({ message: 'Current and new passwords are required' });
   }
 
   try {
-    const result = await authService.changePassword(userId, currentPassword, newPassword);
+    const result = await authService.changePassword(
+      userId,
+      currentPassword,
+      newPassword
+    );
     res.status(200).json({ message: result.message });
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -219,12 +236,13 @@ async function updateProfile(req, res) {
   } catch (err) {
     if (err.message === 'User not found') {
       res.status(404).json({ message: err.message });
-    } else if (err.message === 'Invalid fields in update. Only name and email can be updated.') {
+    } else if (
+      err.message ===
+      'Invalid fields in update. Only name and email can be updated.'
+    ) {
       res.status(400).json({ message: err.message });
     } else {
       res.status(400).json({ message: err.message });
     }
   }
 }
-
-module.exports = { registerUser, loginUser, logoutUser, getUserProfile, changePassword, updateProfile };
