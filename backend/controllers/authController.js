@@ -246,3 +246,12 @@ async function updateProfile(req, res) {
     }
   }
 }
+
+module.exports = {
+  registerUser,
+  loginUser,
+  logoutUser,
+  getUserProfile,
+  changePassword,
+  updateProfile,
+};
