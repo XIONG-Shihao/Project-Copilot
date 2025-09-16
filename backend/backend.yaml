@@ -1,0 +1,2021 @@
+openapi: '3.0.3'
+info:
+  title: Collabmate Backend API
+  description: API documentation for the Collabmate project management application
+  version: '1.0'
+  contact:
+    name: Collabmate Team
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: User authentication and profile management
+  - name: Projects
+    description: Project management operations
+  - name: Tasks
+    description: Task management within projects
+  - name: Roles
+    description: Role management and assignment
+  - name: Invites
+    description: Project invitation management
+  - name: Posts
+    description: Post management within projects
+  - name: Comments
+    description: Comment management on posts
+  - name: AI Chat
+    description: AI chatbot integration for project assistance
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+      description: JWT token stored in HTTP-only cookie
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User's unique identifier
+        name:
+          type: string
+          description: User's full name
+        email:
+          type: string
+          format: email
+          description: User's email address
+        userProjects:
+          type: array
+          items:
+            type: string
+          description: Array of project IDs the user is a member of
+      required:
+        - id
+        - name
+        - email
+
+    Project:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Project's unique identifier
+        projectName:
+          type: string
+          description: Name of the project
+        projectDescription:
+          type: string
+          description: Description of the project
+        projectOwner:
+          $ref: '#/components/schemas/User'
+        projectMembers:
+          type: array
+          items:
+            type: object
+            properties:
+              user:
+                $ref: '#/components/schemas/User'
+              role:
+                $ref: '#/components/schemas/Role'
+        projectTasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+        projectPosts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+        settings:
+          type: object
+          properties:
+            joinByLinkEnabled:
+              type: boolean
+              description: Whether joining by invite link is enabled
+              default: true
+            pdfGenerationEnabled:
+              type: boolean
+              description: Whether PDF generation is enabled
+              default: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - projectName
+        - projectDescription
+
+    Task:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Task's unique identifier
+        taskName:
+          type: string
+          description: Name of the task
+        taskDescription:
+          type: string
+          description: Description of the task
+        taskDeadline:
+          type: string
+          format: date-time
+          description: Deadline for the task
+        taskCreator:
+          $ref: '#/components/schemas/User'
+        taskAssignee:
+          $ref: '#/components/schemas/User'
+        taskProgress:
+          type: string
+          enum: ['To Do', 'In Progress', 'Completed']
+          description: Current progress status of the task
+        progressHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              progress:
+                type: string
+                enum: ['To Do', 'In Progress', 'Completed']
+              updatedBy:
+                $ref: '#/components/schemas/User'
+              timestamp:
+                type: string
+                format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - taskName
+        - taskDeadline
+
+    Role:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Role's unique identifier
+        roleName:
+          type: string
+          enum: ['administrator', 'developer', 'viewer']
+          description: Name of the role
+      required:
+        - roleName
+
+    Post:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Post's unique identifier
+        title:
+          type: string
+          description: Title of the post
+          maxLength: 200
+        content:
+          type: string
+          description: Content of the post
+          maxLength: 2000
+        postType:
+          type: string
+          enum: ['Feedback', 'Announcement', 'Discussion']
+          description: Type of the post
+        author:
+          $ref: '#/components/schemas/User'
+        project:
+          type: string
+          description: Project ID the post belongs to
+        mentionedTasks:
+          type: array
+          items:
+            type: object
+            properties:
+              task:
+                type: string
+                description: Referenced task ID
+              mentionText:
+                type: string
+                description: The mention text used
+          description: Tasks mentioned in the post
+        image:
+          type: object
+          properties:
+            data:
+              type: string
+              description: Base64 encoded image data
+            contentType:
+              type: string
+              description: MIME type of the image
+          description: Optional image attachment
+        likesCount:
+          type: number
+          description: Number of likes (populated)
+        userHasLiked:
+          type: boolean
+          description: Whether current user liked the post (populated)
+        commentsCount:
+          type: number
+          description: Number of comments (populated)
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - title
+        - content
+        - postType
+        - author
+        - project
+
+    Comment:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Comment's unique identifier
+        content:
+          type: string
+          description: Content of the comment
+          maxLength: 500
+        author:
+          $ref: '#/components/schemas/User'
+        post:
+          type: string
+          description: Post ID the comment belongs to
+        parentComment:
+          type: string
+          description: Parent comment ID for nested comments (null for top-level comments)
+        likesCount:
+          type: number
+          description: Number of likes on the comment
+          default: 0
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - content
+
+    Like:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Like's unique identifier
+        user:
+          $ref: '#/components/schemas/User'
+        targetType:
+          type: string
+          enum: ['Post', 'Comment']
+          description: Type of target being liked
+        targetId:
+          type: string
+          description: ID of the target being liked
+        project:
+          type: string
+          description: Project ID for analytics and activity tracking
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - user
+        - targetType
+        - targetId
+        - project
+
+    InviteLink:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Invite link's unique identifier
+        projectId:
+          type: string
+          description: Project ID the invite link is for
+        token:
+          type: string
+          description: Unique token for the invite link
+        createdBy:
+          $ref: '#/components/schemas/User'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - projectId
+        - token
+        - createdBy
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        error:
+          type: string
+          description: Detailed error information
+
+paths:
+  # Authentication Routes
+  /register:
+    post:
+      tags: [Authentication]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: 
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  description: User's full name
+                email:
+                  type: string
+                  format: email
+                  description: User's email address
+                password:
+                  type: string
+                  description: User's password
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Missing required properties
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /login:
+    post:
+      tags: [Authentication]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: 
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's email address
+                password:
+                  type: string
+                  description: User's password
+                rememberMe:
+                  type: boolean
+                  description: Whether to remember the user for 30 days
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Missing email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /logout:
+    post:
+      tags: [Authentication]
+      summary: Logout user
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /profile:
+    get:
+      tags: [Authentication]
+      summary: Get user profile
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags: [Authentication]
+      summary: Update user profile
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: New name for the user
+                email:
+                  type: string
+                  format: email
+                  description: New email for the user
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid data provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /changePassword:
+    post:
+      tags: [Authentication]
+      summary: Change user password
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: 
+                - currentPassword
+                - newPassword
+              properties:
+                currentPassword:
+                  type: string
+                  description: Current password
+                newPassword:
+                  type: string
+                  description: New password
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid password or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Project Routes
+  /projects/create:
+    post:
+      tags: [Projects]
+      summary: Create a new project
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: 
+                - projectName
+                - projectDescription
+              properties:
+                projectName:
+                  type: string
+                  description: Name of the project
+                projectDescription:
+                  type: string
+                  description: Description of the project
+      responses:
+        '201':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  project:
+                    $ref: '#/components/schemas/Project'
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/user-projects:
+    get:
+      tags: [Projects]
+      summary: Get all projects for the authenticated user
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: User projects retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/{projectId}:
+    get:
+      tags: [Projects]
+      summary: Get project details by ID
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+      responses:
+        '200':
+          description: Project details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projectName:
+                    type: string
+                  projectDescription:
+                    type: string
+                  members:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user:
+                          $ref: '#/components/schemas/User'
+                        role:
+                          $ref: '#/components/schemas/Role'
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+        '403':
+          description: Access denied - not a project member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Projects]
+      summary: Delete a project
+      description: Permanently delete a project. Only project administrators can delete projects.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+      responses:
+        '200':
+          description: Project deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Only project administrators can delete projects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/{projectId}/export-summary:
+    get:
+      tags: [Projects]
+      summary: Export project summary as PDF
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+      responses:
+        '200':
+          description: PDF file generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Access denied - not authorized to export
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/{projectId}/details:
+    put:
+      tags: [Projects]
+      summary: Update project details (name and description)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                projectName:
+                  type: string
+                  description: New name for the project
+                projectDescription:
+                  type: string
+                  description: New description for the project
+      responses:
+        '200':
+          description: Project details updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  project:
+                    $ref: '#/components/schemas/Project'
+        '403':
+          description: Only project administrators can update project details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/{projectId}/settings:
+    put:
+      tags: [Projects]
+      summary: Update project settings
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [settings]
+              properties:
+                settings:
+                  type: object
+                  properties:
+                    joinByLinkEnabled:
+                      type: boolean
+                      description: Whether joining by invite link is enabled
+                    pdfGenerationEnabled:
+                      type: boolean
+                      description: Whether PDF generation is enabled
+      responses:
+        '200':
+          description: Project settings updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  project:
+                    $ref: '#/components/schemas/Project'
+        '403':
+          description: Only project administrators can update project settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/{projectId}/leave:
+    post:
+      tags: [Projects]
+      summary: Leave a project
+      description: Leave a project. If the user is the last administrator, they must choose to either transfer ownership to another member or delete the project.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+      responses:
+        '200':
+          description: Successfully left the project or requires action for last administrator
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  isLastAdmin:
+                    type: boolean
+                    description: Whether the user is the last administrator (requires special action)
+                  members:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user:
+                          $ref: '#/components/schemas/User'
+                        role:
+                          $ref: '#/components/schemas/Role'
+                    description: Project members (returned only if isLastAdmin is true)
+                  options:
+                    type: array
+                    items:
+                      type: string
+                    description: Available options for last admin (returned only if isLastAdmin is true)
+        '400':
+          description: Invalid request or project owner cannot leave without transferring ownership
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/{projectId}/disable-invite-links:
+    post:
+      tags: [Projects]
+      summary: Disable all active invite links for a project
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+      responses:
+        '200':
+          description: Project invite links disabled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Only project administrators can manage invite links
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Task Routes
+  /projects/{projectId}/task:
+    post:
+      tags: [Tasks]
+      summary: Create a new task in a project
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [taskName, taskDescription, taskDeadline]
+              properties:
+                taskName:
+                  type: string
+                  description: Name of the task
+                taskDescription:
+                  type: string
+                  description: Description of the task
+                taskDeadline:
+                  type: string
+                  format: date-time
+                  description: Deadline for the task
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '400':
+          description: Missing required fields or invalid deadline
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to create tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/{projectId}/task/{taskId}:
+    put:
+      tags: [Tasks]
+      summary: Update a task
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Task ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                taskName:
+                  type: string
+                  description: New name for the task
+                taskDescription:
+                  type: string
+                  description: New description for the task
+                taskDeadline:
+                  type: string
+                  format: date-time
+                  description: New deadline for the task
+                taskProgress:
+                  type: string
+                  enum: ['To Do', 'In Progress', 'Completed']
+                  description: New progress status for the task
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '400':
+          description: No fields provided for update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Tasks]
+      summary: Delete a task
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Task ID
+      responses:
+        '200':
+          description: Task deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/{projectId}/task/{taskId}/assign/{memberId}:
+    put:
+      tags: [Tasks]
+      summary: Assign a task to a project member
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Task ID
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Member ID to assign the task to
+      responses:
+        '200':
+          description: Task assigned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/{projectId}/task/{taskId}/progress:
+    put:
+      tags: [Tasks]
+      summary: Update task progress
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Task ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newProg]
+              properties:
+                newProg:
+                  type: string
+                  enum: ['To Do', 'In Progress', 'Completed']
+                  description: New progress value
+      responses:
+        '200':
+          description: Task progress updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '400':
+          description: New progress value is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Role Management Routes
+  /projects/{projectId}/members/{memberId}/role:
+    put:
+      tags: [Roles]
+      summary: Assign role to a project member
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Member ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  enum: ['administrator', 'developer', 'viewer']
+                  description: Role to assign
+      responses:
+        '200':
+          description: Role assigned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  project:
+                    $ref: '#/components/schemas/Project'
+        '400':
+          description: Invalid role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Invite Routes
+  /projects/{projectId}/invite:
+    post:
+      tags: [Invites]
+      summary: Generate invite link for a project
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+      responses:
+        '201':
+          description: Invite link generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  inviteLink:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        description: Invite token
+        '403':
+          description: Only project administrators can generate invite links
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found or not a member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/join:
+    post:
+      tags: [Invites]
+      summary: Join project via invite link
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+                  description: Invite token
+      responses:
+        '200':
+          description: Successfully joined project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  project:
+                    $ref: '#/components/schemas/Project'
+        '400':
+          description: Invite token is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Invalid or expired invite link, project not found, or role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Already a member of this project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/invite/details:
+    get:
+      tags: [Invites]
+      summary: Get project details from invite link
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Invite token
+      responses:
+        '200':
+          description: Project details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  project:
+                    $ref: '#/components/schemas/Project'
+        '400':
+          description: Invite token is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Invalid or expired invite link or project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/remove-member:
+    post:
+      tags: [Projects]
+      summary: Remove a member from a project
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [projectId, targetUserId]
+              properties:
+                projectId:
+                  type: string
+                  description: Project ID
+                targetUserId:
+                  type: string
+                  description: User ID to remove from the project
+      responses:
+        '200':
+          description: Member removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Error removing member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Post Routes
+  /project/{projectId}/posts:
+    get:
+      tags: [Posts]
+      summary: Get all posts for a project
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+      responses:
+        '200':
+          description: Posts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags: [Posts]
+      summary: Create a new post in a project
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, content]
+              properties:
+                title:
+                  type: string
+                  description: Title of the post
+                content:
+                  type: string
+                  description: Content of the post
+      responses:
+        '201':
+          description: Post created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  post:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /posts/{postId}:
+    get:
+      tags: [Posts]
+      summary: Get a specific post by ID
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Post ID
+      responses:
+        '200':
+          description: Post retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  post:
+                    $ref: '#/components/schemas/Post'
+                  comments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags: [Posts]
+      summary: Update a post
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Post ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: New title for the post
+                content:
+                  type: string
+                  description: New content for the post
+      responses:
+        '200':
+          description: Post updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  post:
+                    $ref: '#/components/schemas/Post'
+        '403':
+          description: Not authorized to update this post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Posts]
+      summary: Delete a post
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Post ID
+      responses:
+        '200':
+          description: Post deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Not authorized to delete this post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /posts/{postId}/like:
+    post:
+      tags: [Posts]
+      summary: Toggle like on a post
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Post ID
+      responses:
+        '200':
+          description: Like toggled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action:
+                    type: string
+                    enum: ['liked', 'unliked']
+                    description: The action performed
+                  likesCount:
+                    type: number
+                    description: Total number of likes
+                  userHasLiked:
+                    type: boolean
+                    description: Whether the current user has liked the post
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Comment Routes
+  /posts/{postId}/comments:
+    post:
+      tags: [Comments]
+      summary: Create a new comment on a post
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Post ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+                  description: Content of the comment
+      responses:
+        '201':
+          description: Comment created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  comment:
+                    $ref: '#/components/schemas/Comment'
+        '400':
+          description: Cannot reply to nested comment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /comments/{commentId}:
+    delete:
+      tags: [Comments]
+      summary: Delete a comment
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Comment ID
+      responses:
+        '200':
+          description: Comment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Not authorized to delete this comment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Comment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # AI Chat Routes
+  /chat/{projectId}/message:
+    post:
+      tags: [AI Chat]
+      summary: Send a message to the AI chatbot
+      description: Send a message to the AI chatbot for project assistance and receive a response
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID for context
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: The message content to send to the AI chatbot
+                conversationHistory:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+                        enum: ['user', 'assistant']
+                      content:
+                        type: string
+                  description: Optional conversation history for context
+              required:
+                - message
+            example:
+              message: "Can you help me understand the current project status?"
+              conversationHistory: [
+                {
+                  "role": "user",
+                  "content": "What tasks are overdue?"
+                },
+                {
+                  "role": "assistant", 
+                  "content": "Based on the project data, there are 2 overdue tasks..."
+                }
+              ]
+      responses:
+        '200':
+          description: AI chatbot response received successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    description: The AI chatbot's response message
+                  usage:
+                    type: object
+                    properties:
+                      prompt_tokens:
+                        type: number
+                      completion_tokens:
+                        type: number
+                      total_tokens:
+                        type: number
+              example:
+                success: true
+                message: "Based on your project data, here's the current status..."
+                usage:
+                  prompt_tokens: 150
+                  completion_tokens: 75
+                  total_tokens: 225
+        '400':
+          description: Invalid request - message content required or invalid conversation history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: "Message content is required"
+        '401':
+          description: AI service authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: "AI service authentication failed"
+        '429':
+          description: AI service rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: "AI service rate limit exceeded. Please try again later."
+        '500':
+          description: Internal server error or AI service failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: "Failed to get AI response"
+
+  /chat/{projectId}/context:
+    get:
+      tags: [AI Chat]
+      summary: Get project context for the AI chatbot
+      description: Retrieve formatted project context including tasks, members, and project details for AI assistance
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID to get context for
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project context retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  context:
+                    type: string
+                    description: Formatted project context string for AI consumption
+                  projectData:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Project name
+                      description:
+                        type: string
+                        description: Project description
+                      memberCount:
+                        type: number
+                        description: Number of project members (excluding viewers)
+                      taskCount:
+                        type: number
+                        description: Total number of tasks in the project
+              example:
+                success: true
+                context: "Project: Sample Project\\nDescription: A sample project for demonstration\\nOwner: John Doe\\n\\nTeam Members:\\n- Jane Smith - Role: administrator\\n- Bob Wilson - Role: developer\\n\\nTasks:\\n- Setup database: Configure PostgreSQL database\\n  Status: Completed\\n  Assigned to: Jane Smith\\n  Due: 15 July 2025\\n\\n- Create API endpoints: Build REST API\\n  Status: In Progress\\n  Assigned to: Bob Wilson\\n  Due: 20 August 2025\\n"
+                projectData:
+                  name: "Sample Project"
+                  description: "A sample project for demonstration"
+                  memberCount: 2
+                  taskCount: 2
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: "Project not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: "Failed to get project context"
+  
