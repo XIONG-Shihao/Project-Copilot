@@ -1,0 +1,81 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Progress View / Kanban Board Styles */
+/* Improved column equalization */
+.progress-row {
+  display: flex;
+  flex-wrap: nowrap;
+  min-height: 600px;
+}
+
+.progress-column {
+  display: flex;
+  flex: 1;
+}
+
+/* Make columns flex to fill available height */
+.g-3 > [class*="col-"] {
+  display: flex;
+}
+
+.kanban-column-header {
+  padding: 8px;
+  text-align: center;
+  font-weight: bold;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.kanban-column-body {
+  background-color: #f8f9fa;
+  flex: 1; /* This allows the body to grow and fill available space */
+  overflow-y: auto;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  position: relative; /* For absolute positioning of empty state */
+  height: 100%;
+}
+
+.kanban-column {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.task-card {
+  transition: all 0.2s ease;
+  border-left: 4px solid #6c757d;
+}
+
+.task-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Task status colors */
+.task-card[data-status="To Do"] {
+  border-left-color: #dc3545;
+}
+
+.task-card[data-status="In Progress"] {
+  border-left-color: #ffc107;
+}
+
+.task-card[data-status="Completed"] {
+  border-left-color: #28a745;
+}
