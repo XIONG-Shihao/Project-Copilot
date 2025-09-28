@@ -1,0 +1,63 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: [ main, master, develop ]
+  push:
+    branches: [ main, master, develop ]
+
+jobs:
+  backend-ci:
+    name: Backend - Docker Build & Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build backend Docker image
+      run: |
+        docker build -t backend:test ./backend
+        
+    - name: Run backend linting
+      run: |
+        docker run --rm backend:test npm run lint:check
+        
+    - name: Check backend compilation
+      run: |
+        docker run --rm backend:test npm run build:check
+    
+    - name: Run Backend Tests
+      run: |
+        docker run --rm backend:test npm run test -- --coverage --watchAll=false
+
+
+  frontend-ci:
+    name: Frontend - Docker Build & Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build frontend Docker image
+      run: |
+        docker build -t frontend:test ./frontend
+        
+    - name: Run frontend linting
+      run: |
+        docker run --rm frontend:test npm run lint:check
+        
+    - name: Build frontend
+      run: |
+        docker run --rm frontend:test npm run build
+        
+    - name: Run frontend tests
+      run: |
+        docker run --rm frontend:test npm run test -- --coverage --watchAll=false
