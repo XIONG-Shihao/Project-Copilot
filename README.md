@@ -56,6 +56,7 @@ For sharing outside the app, projects can be exported as **PDF summaries**, givi
     docker-compose down -v
 
 ## Project Structure
+```
 .
 ├── backend/
 │   ├── routes/         # REST API endpoints
