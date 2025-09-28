@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Project Summary - {{projectName}}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .project-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 16px;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #007bff;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .chart-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .timeline-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+        .activity-bar {
+            width: 150px;
+            height: 12px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 5px auto;
+        }
+        .activity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #0056b3);
+            border-radius: 6px;
+        }
+        .warning-text {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .success-text {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+        }
+        .description-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="project-title">{{projectName}}</div>
+        <div class="subtitle">Project Summary Report</div>
+        <div class="subtitle">Generated on {{generatedDate}}</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Project Overview</div>
+        <div class="description-box">
+            <div class="info-label">Description</div>
+            <div class="info-value">{{projectDescription}}</div>
+        </div>
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="info-label">Timeline</div>
+                <div class="info-value">{{timeline}}</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">Total Team Members</div>
+                <div class="info-value">{{teamMembers.length}}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Task Overview</div>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number">{{totalTasks}}</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{tasksByStatus.Completed}}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{tasksByStatus.[In Progress]}}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{tasksByStatus.[To Do]}}</div>
+                <div class="stat-label">To Do</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Team Members</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each teamMembers}}
+                <tr>
+                    <td>{{name}}</td>
+                    <td>{{email}}</td>
+                    <td>{{role}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Task Distribution by Team Member</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Team Member</th>
+                    <th>Tasks Assigned</th>
+                    <th>Tasks Created</th>
+                    <th>Tasks Completed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each taskDistribution}}
+                <tr>
+                    <td>{{name}}</td>
+                    <td>{{assigned}}</td>
+                    <td>{{created}}</td>
+                    <td>{{completed}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Task Completion Analysis</div>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number">{{taskCompletionStats.completionRate}}%</div>
+                <div class="stat-label">Overall Completion Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{taskCompletionStats.onTimeRate}}%</div>
+                <div class="stat-label">On-Time Completion</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{taskCompletionStats.incomplete}}</div>
+                <div class="stat-label">Overdue Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{taskCompletionStats.late}}</div>
+                <div class="stat-label">Late Completions</div>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <div class="info-label">Completion Progress</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{taskCompletionStats.completionRate}}%"></div>
+            </div>
+            <div class="info-value">{{taskCompletionStats.totalCompleted}} of {{taskCompletionStats.totalTasks}} tasks completed</div>
+        </div>
+    </div>
+
+    {{#if missedDeadlines.length}}
+    <div class="section">
+        <div class="section-title">Missed Deadlines & Overdue Tasks</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Task Name</th>
+                    <th>Deadline</th>
+                    <th>Assignee</th>
+                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Days Late</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each missedDeadlines}}
+                <tr>
+                    <td>{{taskName}}</td>
+                    <td>{{deadline}}</td>
+                    <td>{{assignee}}</td>
+                    <td><span class="{{#if (eq status 'Completed')}}success-text{{else}}warning-text{{/if}}">{{status}}</span></td>
+                    <td>{{type}}</td>
+                    <td class="warning-text">{{daysOverdue}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+    {{/if}}
+
+    <div class="section">
+        <div class="section-title">Workload Analysis</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Team Member</th>
+                    <th>Total Tasks</th>
+                    <th>Completed</th>
+                    <th>Completion Rate</th>
+                    <th>Overdue</th>
+                    <th>Late Completions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each workloadAnalysis}}
+                <tr>
+                    <td>{{name}}</td>
+                    <td>{{totalTasks}}</td>
+                    <td class="success-text">{{completedTasks}}</td>
+                    <td>{{completionRate}}%</td>
+                    <td class="{{#if (gt overdueTasks 0)}}warning-text{{/if}}">{{overdueTasks}}</td>
+                    <td class="{{#if (gt lateTasks 0)}}warning-text{{/if}}">{{lateTasks}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Project Activity Timeline</div>
+        <div class="chart-container">
+            <div style="margin-bottom: 15px; font-weight: bold;">Weekly Activity Overview</div>
+            {{#each activityTimeline}}
+            <div class="timeline-item">
+                <div style="flex: 1;">
+                    <div style="font-weight: bold;">{{week}}</div>
+                    <div style="font-size: 12px; color: #666;">{{period}}</div>
+                </div>
+                <div style="flex: 1; text-align: center;">
+                    <div>Created: {{tasksCreated}} | Completed: {{tasksCompleted}}</div>
+                    <div class="activity-bar">
+                        <div class="activity-fill" style="width: {{activityPercent}}%"></div>
+                    </div>
+                </div>
+                <div style="flex: 0 0 60px; text-align: right; font-weight: bold;">
+                    {{activity}} tasks
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>This report was automatically generated by CollabMate</p>
+        <p>Report generated on {{generatedDate}}</p>
+    </div>
+</body>
+</html>
