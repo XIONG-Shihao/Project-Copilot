@@ -50,7 +50,7 @@ test('shows the brand text', () => {
       <AppNavbar />
     </MemoryRouter>
   );
-  expect(screen.getByText('CollabMate')).toBeInTheDocument();
+  expect(screen.getByText('ProjectCopilot')).toBeInTheDocument();
 });
 
 test('shows Dashboard link when showDashboardLink is true', () => {

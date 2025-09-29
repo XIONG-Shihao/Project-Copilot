@@ -74,7 +74,7 @@ test('renders Login and finds form fields', () => {
       <Login />
     </MemoryRouter>
   );
-  expect(screen.getByText('CollabMate')).toBeInTheDocument();
+  expect(screen.getByText('ProjectCopilot')).toBeInTheDocument();
   expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
   expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
   expect(screen.getByLabelText(/remember me/i)).toBeInTheDocument();

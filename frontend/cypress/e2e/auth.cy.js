@@ -16,7 +16,7 @@ describe('Authentication Flow', () => {
   it('should navigate to the login page', () => {
     cy.visit('/login');
     cy.contains('h2', 'Login').should('be.visible');
-    cy.contains('CollabMate').should('be.visible');
+    cy.contains('ProjectCopilot').should('be.visible');
   });
 
   it('should show validation errors for empty login form', () => {

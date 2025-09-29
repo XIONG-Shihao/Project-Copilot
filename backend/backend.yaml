@@ -1,10 +1,10 @@
 openapi: '3.0.3'
 info:
-  title: Collabmate Backend API
-  description: API documentation for the Collabmate project management application
+  title:  Backend API
+  description: API documentation for the ProjectCopilot project management application
   version: '1.0'
   contact:
-    name: Collabmate Team
+    name: ProjectCopilot Team
 servers:
   - url: http://localhost:3000/api
     description: Development server

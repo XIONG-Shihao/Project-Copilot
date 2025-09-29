@@ -51,7 +51,7 @@ export default function Login() {
       <Row className="w-100 justify-content-center">
         <Col md={6} lg={5}>
           <div className="text-center mb-3">
-            <span style={{ color: '#007bff', fontWeight: 'bold', fontSize: '2rem', letterSpacing: '2px' }}>CollabMate</span>
+            <span style={{ color: '#007bff', fontWeight: 'bold', fontSize: '2rem', letterSpacing: '2px' }}>ProjectCopilot</span>
           </div>
           <Card>
             <Card.Body>

@@ -39,8 +39,8 @@ For sharing outside the app, projects can be exported as **PDF summaries**, givi
 
 1. Clone the repository:  
    ```bash
-   git clone https://github.com/your-org/collabmate.git
-   cd collabmate
+   git clone https://github.com/your-org/ProjectCopilot.git
+   cd ProjectCopilot
 2.	Start the full stack:
     ```bash
     docker-compose up -d
@@ -98,7 +98,7 @@ Requires local Node.js + npm:
 #  Database Access
 Connect with MongoDB Compass:
 
-    mongodb://admin:password@localhost:27017/collabmate_db?authSource=admin
+    mongodb://admin:password@localhost:27017/ProjectCopilot_db?authSource=admin
 
 # Deployment
 Production builds of the frontend should be created with:

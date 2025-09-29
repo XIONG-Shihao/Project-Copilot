@@ -78,7 +78,7 @@ test('renders Register form with all fields', () => {
   );
   
   // Check for component title and logo
-  expect(screen.getByText('CollabMate')).toBeInTheDocument();
+  expect(screen.getByText('ProjectCopilot')).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: 'Register' })).toBeInTheDocument();
   
   // Check for all form fields

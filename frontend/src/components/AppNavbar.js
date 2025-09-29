@@ -36,7 +36,7 @@ export default function AppNavbar({ showDashboardLink = false }) {
       <Container fluid>
         <Navbar.Brand>
           <span style={{ color: '#007bff', fontWeight: 'bold', fontSize: '1.5rem', letterSpacing: '2px' }}>
-            CollabMate
+            ProjectCopilot
           </span>
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />

@@ -111,7 +111,7 @@ describe('End-to-End User Flow', { testIsolation: false }, () => {
     
     // Navbar should be visible
     cy.get('nav', { timeout: 5000 }).should('be.visible');
-    cy.contains('CollabMate', { timeout: 5000 }).should('be.visible');
+    cy.contains('ProjectCopilot', { timeout: 5000 }).should('be.visible');
   });
 
   // Project creation test

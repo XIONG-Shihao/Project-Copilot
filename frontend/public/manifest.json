@@ -1,19 +1,19 @@
 {
-  "short_name": "CollabMate",
-  "name": "CollabMate - Project Collaboration Platform",
+  "short_name": "ProjectCopilot",
+  "name": "ProjectCopilot - Project Collaboration Platform",
   "icons": [
     {
-      "src": "collabmate-favicon.png",
+      "src": "ProjectCopilot-favicon.png",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/png"
     },
     {
-      "src": "collabmate-favicon.png",
+      "src": "ProjectCopilot-favicon.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "collabmate-favicon.png",
+      "src": "ProjectCopilot-favicon.png",
       "type": "image/png",
       "sizes": "512x512"
     }
