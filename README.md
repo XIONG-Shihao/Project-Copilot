@@ -1,10 +1,10 @@
 #  ProjectCopilot – Lightweight Team Collaboration Tool
 
-ProjectCopilot is a **full-stack web app for small team management**, built with **React, Node.js/Express, and MongoDB**, and containerized with Docker.  
+ProjectCopilot is a lightweight **full-stack web app for small team management**, built with **React, Node.js/Express, and MongoDB**, and containerized with Docker.  
 It helps teams collaborate through **projects, tasks, posts, comments, invites, and AI assistance**.
 
 
-It is a **streamlined collaboration platform** built for small teams that want clarity without heavy enterprise tools. It brings projects, tasks, and discussions into one place so teams can stay organized without extra overhead.  
+It builts for small teams that want clarity without heavy enterprise tools. It brings projects, tasks, and discussions into one place so teams can stay organized without extra overhead.  
 
 Each project has its own space with tasks, deadlines, posts, and comments, supported by **role-based access control** to keep responsibilities clear. Members can join easily through invite links, making onboarding fast and simple.  
 
@@ -22,11 +22,18 @@ For sharing outside the app, projects can be exported as **PDF summaries**, givi
 -  **Invites** — join projects securely via one-time invite links.  
 -  **Exports** — generate project summary reports as PDFs.  
 -  **AI Chatbot** — project-aware assistant for summarization and Q&A (powered by Groq API).  
--  **Authentication** — JWT-based login with secure cookies.  
 
 ---
+# Image demo about project
+Project Dashboard
+![Project Dashboard](frontend/public/projectScreenshots/project_dashboard.png)
 
-## 🛠️ Tech Stack
+Task Summary
+![Task Summary](frontend/public/projectScreenshots/task_summary.png)
+
+Invite Link
+![Invite Link](frontend/public/projectScreenshots/inviteLink.png)
+## Tech Stack
 
 - **Frontend**: React 19, Bootstrap 5, Chart.js, Cypress for E2E tests.  
 - **Backend**: Node.js, Express, Mongoose, JWT auth, Puppeteer for PDF export.  
@@ -35,7 +42,7 @@ For sharing outside the app, projects can be exported as **PDF summaries**, givi
 
 ---
 
-## ⚡ Quick Start (with Docker)
+## Quick Start (with Docker)
 
 1. Clone the repository:  
    ```bash
