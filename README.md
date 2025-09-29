@@ -75,6 +75,7 @@ For sharing outside the app, projects can be exported as **PDF summaries**, givi
 │
 ├── docker-compose.yml
 └── README.md
+```
 
 ##  Testing
 Make sure the app is running (docker-compose up -d) before running tests.
