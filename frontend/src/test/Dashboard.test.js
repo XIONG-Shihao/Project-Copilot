@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -33,6 +34,8 @@ afterAll(() => {
   console.warn.mockRestore();
   console.error.mockRestore();
 });
+
+/* eslint-enable no-console */
 
 // Mock the services
 jest.mock('../services/auth.service');

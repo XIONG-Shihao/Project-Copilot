@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -95,6 +96,8 @@ afterAll(() => {
   console.error.mockRestore();
 });
 
+/* eslint-enable no-console */
+
 beforeEach(() => {
   // Reset mock functions before each test
   mockNavigate = jest.fn();
@@ -146,7 +149,7 @@ describe('ProjectJoin Component', () => {
     // Check that project details are displayed
     expect(screen.getByText('Project Invitation')).toBeInTheDocument();
     expect(
-      screen.getByText("You've been invited to join:")
+      screen.getByText('You\'ve been invited to join:')
     ).toBeInTheDocument();
     expect(screen.getByText('Test Project')).toBeInTheDocument();
     expect(
